@@ -1,4 +1,5 @@
 using E_Commerce_API.Data;
+using Microsoft.EntityFrameworkCore;
 using E_Commerce_API.Services.AuthService;
 using E_Commerce_API.Services.CarServices;
 using E_Commerce_API.Services.CategoryServices;
@@ -60,8 +61,15 @@ namespace E_Commerce_API
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
 
-            builder.Services.AddDbContext<AppDbContext>(
-                options => options.UseSqlServer(builder.Configuration.GetConnectionString("ConectionString")));
+            var connectionString = builder.Configuration.GetConnectionString("ConectionString");
+
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseMySql(
+                    connectionString,
+                    ServerVersion.AutoDetect(connectionString),
+                    mySqlOptions => mySqlOptions.EnableRetryOnFailure()
+                )
+            );
 
 
             builder.Services.AddScoped<IProductService, ProductService>();
@@ -91,6 +99,11 @@ namespace E_Commerce_API
             });
 
             var app = builder.Build();
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Database.Migrate();
+            }
 
             if (app.Environment.IsDevelopment())
             {
