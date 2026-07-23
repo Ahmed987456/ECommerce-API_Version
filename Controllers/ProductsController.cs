@@ -95,6 +95,9 @@ namespace E_Commerce_API.Controllers
             var product = await _productSercive.GetById(id);
             if (product == null)
                 return NotFound("Not Product Found With This ID");
+
+            if (dto.StockQuantity.HasValue && dto.StockQuantity.Value < 0)
+                return BadRequest("الكمية لا يمكن أن تكون سالبة");
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 product.Name = dto.Name;
             if (!string.IsNullOrEmpty(dto.Description))

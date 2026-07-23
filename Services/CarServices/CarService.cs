@@ -13,22 +13,32 @@ namespace E_Commerce_API.Services.CarServices
 
         public async Task CreateCarItem(CreateCartItemDto dto, int userId)
         {
-            var CarItem = await _context.CartItems.FirstOrDefaultAsync(
+            var product = await _context.Products.FindAsync(dto.ProductId);
+
+            var existingItem = await _context.CartItems.FirstOrDefaultAsync(
                 s => s.UserId == userId && s.ProductId == dto.ProductId
             );
-            if (CarItem != null)
+
+            int currentCartQty = existingItem?.Quantity ?? 0;
+            int totalRequested = currentCartQty + dto.Quantity;
+
+            // تحقق إن الكمية المطلوبة مش أكبر من المخزون
+            if (totalRequested > product.StockQuantity)
+                throw new InvalidOperationException($"الكمية المتاحة {product.StockQuantity} فقط، وعندك {currentCartQty} في السلة");
+
+            if (existingItem != null)
             {
-                CarItem.Quantity += dto.Quantity;
+                existingItem.Quantity += dto.Quantity;
             }
             else
             {
-                var NewItem = new CartItem
+                var newItem = new CartItem
                 {
                     ProductId = dto.ProductId,
                     Quantity = dto.Quantity,
                     UserId = userId,
                 };
-                await _context.CartItems.AddAsync(NewItem);
+                await _context.CartItems.AddAsync(newItem);
             }
             await _context.SaveChangesAsync();
         }
@@ -117,5 +127,6 @@ namespace E_Commerce_API.Services.CarServices
 
             await _context.SaveChangesAsync();
         }
+
     }
 }

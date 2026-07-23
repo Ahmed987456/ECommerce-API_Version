@@ -29,18 +29,27 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Customer")]
         [HttpPost]
-        public async Task<IActionResult> AddItemForCar([FromForm] CreateCartItemDto dto)
+        public async Task<IActionResult> AddItemForCar([FromBody] CreateCartItemDto dto)
         {
-            var userId = GetCurrentUserId();
-            var product = await _productService.GetById(dto.ProductId);
-            if (product == null)
-                return NotFound("Not Product Found With This Id");
-            if (product.StockQuantity <= 0)
-                return BadRequest("There is not enough of the product.");
-            if (dto.Quantity > product.StockQuantity)
-                return BadRequest("The quantity requested exceeds the available stock.");
-            await _carService.CreateCarItem(dto,userId);
-            return Ok("Add Succeded");
+            try
+            {
+                var userId = GetCurrentUserId();
+                var user = await _userService.GetUserById(userId);
+                if (user == null) return NotFound("User not found");
+
+                var product = await _productService.GetById(dto.ProductId);
+                if (product == null) return NotFound("Product not found");
+
+                if (dto.Quantity > product.StockQuantity)
+                    return BadRequest($"الكمية المطلوبة أكبر من المتاح ({product.StockQuantity})");
+
+                await _carService.CreateCarItem(dto, userId);
+                return Ok("Add Succeeded");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -51,8 +60,8 @@ namespace E_Commerce_API.Controllers
         public async Task<IActionResult> GetCartAsync()
         {
             var userId = GetCurrentUserId();
-            var result = await _carService.GetUserCart(userId);
-            return Ok(result);
+            var cart = await _carService.GetUserCart(userId);
+            return Ok(cart);
         }
 
         /// <summary>

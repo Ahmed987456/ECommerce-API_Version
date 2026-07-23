@@ -16,6 +16,5 @@ namespace E_Commerce_API.Services.CarServices
 
         Task DeleteUserCartItems(int userId);
 
-        Task SyncCartWithStock(int userId);
     }
 }

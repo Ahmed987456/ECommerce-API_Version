@@ -27,14 +27,19 @@ namespace E_Commerce_API.Controllers
         public async Task<IActionResult> CreateOrder()
         {
             var userId = GetCurrentUserId();
-            var order = await _orderService.CreateOrder(userId);
+            var (order, error) = await _orderService.CreateOrder(userId);
+
+            if (error != null)
+                return BadRequest(error);
+
             if (order == null)
-                return BadRequest("Cart is empty or quantity unavailable");
-            return Ok(new OrderDto
+                return BadRequest("حصل خطأ في إنشاء الطلب");
+
+            return Ok(new
             {
-                OrderId = order.Id,
-                TotalPrice = order.TotalPrice,
-                OrderStatus = order.OrderStatus
+                orderId = order.Id,
+                totalPrice = order.TotalPrice,
+                orderStatus = order.OrderStatus
             });
         }
 
