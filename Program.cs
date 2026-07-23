@@ -21,11 +21,22 @@ namespace E_Commerce_API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins(allowedOrigins!)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
 
-            // Swagger + JWT
             builder.Services.AddSwaggerGen(c =>
             {
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -71,7 +82,6 @@ namespace E_Commerce_API
                 )
             );
 
-
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICarService, CarService>();
@@ -99,6 +109,7 @@ namespace E_Commerce_API
             });
 
             var app = builder.Build();
+
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -112,6 +123,7 @@ namespace E_Commerce_API
             }
 
             app.UseHttpsRedirection();
+            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
