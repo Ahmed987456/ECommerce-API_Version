@@ -48,7 +48,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromForm] CreateCategoryDto dto)
+        public async Task<IActionResult> CreateAsync([FromBody] CreateCategoryDto dto)
         {
             var exists = await _categoryService.CategoryExists(dto.Name);
             if (exists)
@@ -63,7 +63,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategoryAsync(int id, [FromForm] UpdateCategoryDto dto)
+        public async Task<IActionResult> UpdateCategoryAsync(int id, [FromBody] UpdateCategoryDto dto)
         {
             var category = await _categoryService.GetById(id);
             if (category == null)

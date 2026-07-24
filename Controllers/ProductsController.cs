@@ -74,7 +74,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> CreatAsync([FromForm] CreateProductDto dto)
+        public async Task<IActionResult> CreatAsync([FromBody] CreateProductDto dto)
         {
             var category = await _categoryService.GetById(dto.CategoryId);
             if (category == null)
@@ -90,7 +90,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut]
-        public async Task<IActionResult> UpdateProductAsync(int id, [FromForm] UpdateProductDto dto)
+        public async Task<IActionResult> UpdateProductAsync(int id, [FromBody] UpdateProductDto dto)
         {
             var product = await _productSercive.GetById(id);
             if (product == null)

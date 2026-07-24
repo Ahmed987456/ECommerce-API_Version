@@ -77,7 +77,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut("UpdateStatus/{orderId}")]
-        public async Task<IActionResult> UpdateOraderStatus(int orderId, [FromForm] UpdateOrderStatusDto dto)
+        public async Task<IActionResult> UpdateOraderStatus(int orderId, [FromBody] UpdateOrderStatusDto dto)
         {
             var order = await _orderService.GetOrderById(orderId);
             if (order == null)

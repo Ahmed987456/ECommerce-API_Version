@@ -30,7 +30,7 @@ namespace E_Commerce_API.Controllers
         /// متاح للكل - تسجيل يوزر جديد
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> CreatUserAsync([FromForm] CreateUserDto dto)
+        public async Task<IActionResult> CreatUserAsync([FromBody] CreateUserDto dto)
         {
             var exisitEmail = await _userService.Emailconfirmation(dto.Email);
             if (exisitEmail)
@@ -76,7 +76,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize]
         [HttpPut("{UserId}")]
-        public async Task<IActionResult> UpdateUser(int UserId, [FromForm] UpdateUserDto dto)
+        public async Task<IActionResult> UpdateUser(int UserId, [FromBody] UpdateUserDto dto)
         {
             var currentUserId = GetCurrentUserId();
             var currentUserRole = GetCurrentUserRole();
@@ -103,7 +103,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut("{UserId}/role")]
-        public async Task<IActionResult> ChangeUserRole(int UserId, [FromForm] UserRole role)
+        public async Task<IActionResult> ChangeUserRole(int UserId, [FromBody] UserRole role)
         {
             var user = await _userService.GetUserById(UserId);
             if (user == null)
