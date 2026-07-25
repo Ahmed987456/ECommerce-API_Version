@@ -29,6 +29,7 @@ namespace E_Commerce_API.Services.CarServices
             if (existingItem != null)
             {
                 existingItem.Quantity += dto.Quantity;
+                existingItem.OriginalQuantity = existingItem.Quantity; // حفظ الأصلية
             }
             else
             {
@@ -36,6 +37,7 @@ namespace E_Commerce_API.Services.CarServices
                 {
                     ProductId = dto.ProductId,
                     Quantity = dto.Quantity,
+                    OriginalQuantity = dto.Quantity, // ← ضيف دي
                     UserId = userId,
                 };
                 await _context.CartItems.AddAsync(newItem);
@@ -64,18 +66,18 @@ namespace E_Commerce_API.Services.CarServices
             // تحقق من الكميات وعدلها
             foreach (var item in cartItems)
             {
-                if (item.Quantity > item.Product.StockQuantity)
+                int targetQty = Math.Min(item.OriginalQuantity, item.Product.StockQuantity);
+
+                if (targetQty == 0)
                 {
-                    if (item.Product.StockQuantity == 0)
-                    {
-                        warnings.Add($"{item.Product.Name} نفذت الكمية وتم إزالته من السلة");
-                        _context.CartItems.Remove(item);
-                    }
-                    else
-                    {
-                        warnings.Add($"{item.Product.Name} الكمية المتاحة {item.Product.StockQuantity} فقط، تم تعديل طلبك");
-                        item.Quantity = item.Product.StockQuantity;
-                    }
+                    warnings.Add($"{item.Product.Name} نفذت الكمية وتم إزالته من السلة");
+                    _context.CartItems.Remove(item);
+                }
+                else if (item.Quantity != targetQty)
+                {
+                    if (targetQty < item.OriginalQuantity)
+                        warnings.Add($"{item.Product.Name} الكمية المتاحة {targetQty} فقط، تم تعديل طلبك");
+                    item.Quantity = targetQty;
                 }
             }
 
