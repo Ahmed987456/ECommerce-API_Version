@@ -1,4 +1,5 @@
 ﻿using E_Commerce_API.Dtos.OrdersDto;
+using E_Commerce_API.Enums;
 using E_Commerce_API.Services.OrderService;
 using E_Commerce_API.Services.UserService;
 using Microsoft.AspNetCore.Authorization;
@@ -59,7 +60,7 @@ namespace E_Commerce_API.Controllers
         /// Customer فقط - عرض تفاصيل أوردر
         /// </summary>
         [Authorize(Roles = "Customer")]
-        [HttpGet("orderdetails/{orderId}")]
+        [HttpGet("{orderId}")]
         public async Task<IActionResult> OrderDetailsAsync(int orderId)
         {
             var userId = GetCurrentUserId();
@@ -82,6 +83,11 @@ namespace E_Commerce_API.Controllers
             var order = await _orderService.GetOrderById(orderId);
             if (order == null)
                 return NotFound("Not Order Found With This Id");
+
+            // ضيف الحماية دي
+            if (order.OrderStatus == OrderStatus.Cancelled)
+                return BadRequest("Cannot update a cancelled order");
+
             order.OrderStatus = dto.OrderStatus;
             await _orderService.UpdateStatus();
             return Ok("Order Status Updated Successfully");
@@ -90,7 +96,7 @@ namespace E_Commerce_API.Controllers
         /// <summary>
         /// Customer فقط - إلغاء أوردر
         /// </summary>
-        [Authorize(Roles = "Customer")]
+        [Authorize(Roles = "Customer,Admin")]
         [HttpPut("CancelOrder/{orderid}")]
         public async Task<IActionResult> CancelOrderAsync(int orderid)
         {
@@ -98,12 +104,26 @@ namespace E_Commerce_API.Controllers
             var order = await _orderService.GetOrderById(orderid);
             if (order == null)
                 return NotFound("Not Order Found With This Id");
-            if (order.UserId != userId)
+            var role = GetCurrentUserRole();
+
+            if (role != "Admin" && order.UserId != userId)
                 return Forbid();
+
             var result = await _orderService.CancelOrder(orderid);
             if (result != "Success")
                 return BadRequest(result);
             return Ok("Order Cancelled Successfully");
+        }
+
+        /// <summary>
+        /// Admin فقط - عرض كل الاوردرات
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpGet("AllOrders")]
+        public async Task<IActionResult> GetAllOrders()
+        {
+            var orders = await _orderService.GetAllOrders();
+            return Ok(orders);
         }
     }
 }

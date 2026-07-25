@@ -79,7 +79,7 @@ namespace E_Commerce_API.Controllers
         /// Admin فقط - حذف كاتيجوري
         /// </summary>
         [Authorize(Roles = "Admin")]
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategoryAsync(int id)
         {
             var category = await _categoryService.GetById(id);

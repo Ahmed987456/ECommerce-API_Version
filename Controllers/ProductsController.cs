@@ -89,7 +89,7 @@ namespace E_Commerce_API.Controllers
         /// Admin فقط - تعديل منتج
         /// </summary>
         [Authorize(Roles = "Admin")]
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProductAsync(int id, [FromBody] UpdateProductDto dto)
         {
             var product = await _productSercive.GetById(id);
@@ -123,7 +123,7 @@ namespace E_Commerce_API.Controllers
         /// Admin فقط - حذف منتج
         /// </summary>
         [Authorize(Roles = "Admin")]
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
             var product = await _productSercive.GetById(id);

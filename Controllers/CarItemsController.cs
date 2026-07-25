@@ -68,7 +68,7 @@ namespace E_Commerce_API.Controllers
         /// Customer فقط - حذف منتج من الكارت
         /// </summary>
         [Authorize(Roles = "Customer")]
-        [HttpDelete]
+        [HttpDelete("{productId}")]
         public async Task<IActionResult> DeleteItemFromCart(int ProductId)
         {
             var userId = GetCurrentUserId();
@@ -83,7 +83,7 @@ namespace E_Commerce_API.Controllers
         /// Customer فقط - تعديل كمية منتج في الكارت
         /// </summary>
         [Authorize(Roles = "Customer")]
-        [HttpPut]
+        [HttpPut("{productId}")]
         public async Task<IActionResult> UpdateCartQuantity([FromBody] UpdateCartDto dto)
         {
             var userId = GetCurrentUserId();
